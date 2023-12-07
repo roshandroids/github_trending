@@ -1,20 +1,19 @@
+<!-- web/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Trends Visualization</title>
+    <title>GitHub Trending</title>
 </head>
-
 <body>
-    <h1>GitHub Trends Visualization</h1>
+    <h1>GitHub Trending Programming Languages</h1>
 
-    <!-- Display the Matplotlib plot using the img tag and base64 encoding -->
-<img src="data:image/png;base64,{{ img_data|decode('base64') }}" alt="GitHub Trends Plot">
-
-
+    <!-- Display the list of topics -->
+    <ul>
+        {% for topic in topics %}
+            <li>{{ topic }}</li>
+        {% endfor %}
+    </ul>
 </body>
-
 </html>
