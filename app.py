@@ -6,7 +6,7 @@ import matplotlib
 from collections import Counter
 from scraper.github_scraper import GithubScraper
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ''))
 sys.path.append(project_root)
 
 matplotlib.use('agg')
