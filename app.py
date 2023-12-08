@@ -41,6 +41,7 @@ def index():
 def getSomethingFromDB():
     con = sqlite3.connect("tutorial.db")
     cur = con.cursor()
+    cur.execute("DROP TABLE movie")
     cur.execute("CREATE TABLE movie(title, year, score)")
     cur.execute("""
         INSERT INTO movie VALUES
