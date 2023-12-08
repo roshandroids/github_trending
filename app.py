@@ -1,6 +1,7 @@
 # web/app.py
 import base64
 import io
+import sqlite3
 import sys
 import os
 from io import BytesIO
@@ -36,6 +37,23 @@ def index():
         print(error_message)
         return render_template('error.html', message=error_message)
 
+@app.route('/getSomethingFromDB')
+def getSomethingFromDB():
+    con = sqlite3.connect("tutorial.db")
+    cur = con.cursor()
+    cur.execute("CREATE TABLE movie(title, year, score)")
+    cur.execute("""
+        INSERT INTO movie VALUES
+            ('Monty Python and the Holy Grail', 1975, 8.2),
+            ('And Now for Something Completely Different', 1971, 7.5)
+    """)
+    con.commit()
+    cursor = con.execute('''select * from movie where year''')
+    movies = []
+    for row in cursor:
+        movie = {'title': row[0], 'year': row[1], 'score': row[2]}
+        movies.append(movie)
+    return render_template('get_data.html',movies=movies)
 
 @app.route('/graph')
 def graph():
