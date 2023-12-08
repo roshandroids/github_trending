@@ -5,7 +5,7 @@ import sys
 import os
 from io import BytesIO
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import matplotlib
 from collections import Counter
 
@@ -24,27 +24,24 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    duration = request.args.get('duration', '')
     github_scraper = GithubScraper()
-    # Fetch data using the scraper module
-    response = github_scraper.send_query()
+    response = github_scraper.fetch_data(duration)
 
     if response.status_code == 200:
-        # Example usage:
-        github_scraper.parse_html()
-        topics = github_scraper.extract_topics()
-
-        return render_template('index.html', topics=topics)
-
+        repositories = github_scraper.extract_repositories()
+        return render_template('index.html', repoList=repositories)
     else:
-        print(f"Failed to retrieve search results. Status code: {response.status_code}")
-        return render_template('error.html')
+        error_message = f"Failed to retrieve search results. Status code: {response.status_code}"
+        print(error_message)
+        return render_template('error.html', message=error_message)
 
 
 @app.route('/graph')
 def graph():
     github_scraper = GithubScraper()
     # Fetch data using the scraper module
-    response = github_scraper.send_query()
+    response = github_scraper.fetch_data()
 
     if response.status_code == 200:
         topic_list = github_scraper.extract_topics()
@@ -75,18 +72,20 @@ def graph():
         plt.show()
         # Convert plot to PNG image
         pngImage = io.BytesIO()
-        canvas =FigureCanvas(fig)
+        canvas = FigureCanvas(fig)
         canvas.print_png(pngImage)
 
         # Encode PNG image to base64 string
         pngImageB64String = "data:image/png;base64,"
-        pngImageB64String += base64.b64encode(pngImage.getvalue()).decode('utf8')
+        pngImageB64String += base64.b64encode(
+            pngImage.getvalue()).decode('utf8')
 
         # Pass the BytesIO object to the template
         return render_template('graph.html', image=pngImageB64String)
 
     else:
-        print(f"Failed to retrieve search results. Status code: {response.status_code}")
+        print(
+            f"Failed to retrieve search results. Status code: {response.status_code}")
         return render_template('error.html')
 
 

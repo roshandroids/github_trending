@@ -1,0 +1,31 @@
+ body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .repository {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+        }
+
+        p {
+            margin: 0;
+            color: #555;
+        }
+
+        .language {
+            background-color: #3572A5;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+
+        .stars {
+            margin-top: 10px;
+            color: #f39c12;
+        }

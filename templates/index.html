@@ -1,19 +1,40 @@
-<!-- web/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Trending</title>
+    <title>GitHub Trends Visualization</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
-    <h1>GitHub Trending Programming Languages</h1>
 
-    <!-- Display the list of topics -->
-    <ul>
-        {% for topic in topics %}
-            <li>{{ topic }}</li>
-        {% endfor %}
-    </ul>
+<body>
+<div class="header-container">
+    <h1>Trending Repositories</h1>
+    <form action="{{ url_for('index') }}" method="post">
+    <label for="time_span">Select time span:</label>
+    <select id="time_span" name="time_span">
+        <option value="today" {% if selected_option=='today' %}selected{% endif %}>Today</option>
+        <option value="this_week" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
+        <option value="this_month" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
+    </select>
+    <button type="submit">Submit</button>
+</form>
+</div>
+
+
+<main id="main">
+    {% for repository in repoList %}
+    <div class="repository">
+        <h2>{{ repository.name }}</h2>
+        <p>Owner: {{ repository.owner }}</p>
+        <p>Description: {{ repository.description }}</p>
+        <p>Language: <span class="language">{{ repository.language }}</span></p>
+        <p>Total Stars: {{ repository.stars_total }}</p>
+        <p class="stars">{{ repository.stars_today }}</p>
+    </div>
+    {% endfor %}
+</main>
 </body>
+
 </html>
