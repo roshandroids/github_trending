@@ -5,7 +5,7 @@ import sqlite3
 import sys
 import os
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import matplotlib
 from collections import Counter
 
@@ -21,7 +21,7 @@ matplotlib.use('agg')
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     duration = request.args.get('duration', '')
     github_scraper = GithubScraper()
@@ -52,9 +52,10 @@ def getSomethingFromDB():
     for row in cursor:
         movie = {'title': row[0], 'year': row[1], 'score': row[2]}
         movies.append(movie)
-    return render_template('get_data.html',movies=movies)
+    return render_template('get_data.html', movies=movies)
 
-@app.route('/graph')
+
+@app.route('/graph', methods=['GET', 'POST'])
 def graph():
     duration = request.args.get('duration', '')
     github_scraper = GithubScraper()
