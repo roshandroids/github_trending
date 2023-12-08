@@ -19,6 +19,9 @@
         <option value="this_month" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
     </select>
     <button type="submit">Submit</button>
+     <form action="{{ url_for('graph') }}" method="post">
+        <button type="submit" name="show_graph">Show Graph</button>
+    </form>
 </form>
 </div>
 

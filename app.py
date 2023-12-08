@@ -4,7 +4,6 @@ import io
 import sqlite3
 import sys
 import os
-from io import BytesIO
 
 from flask import Flask, render_template, request
 import matplotlib
@@ -12,7 +11,6 @@ from collections import Counter
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 
 from scraper.github_scraper import GithubScraper
 
@@ -58,14 +56,14 @@ def getSomethingFromDB():
 
 @app.route('/graph')
 def graph():
+    duration = request.args.get('duration', '')
     github_scraper = GithubScraper()
-    # Fetch data using the scraper module
-    response = github_scraper.fetch_data()
+    response = github_scraper.fetch_data(duration)
 
     if response.status_code == 200:
-        topic_list = github_scraper.extract_topics()
+        repositories = github_scraper.extract_repositories()
 
-        print(topic_list)
+        language_list = [repo.language for repo in repositories]
         # Create a Matplotlib figure
         fig = plt.figure(figsize=(10, 6))  # Adjust the size as needed
 
@@ -73,7 +71,7 @@ def graph():
         axis = fig.add_subplot(1, 1, 1)
 
         # Count the occurrences of each programming language
-        language_counts = Counter(topic_list)
+        language_counts = Counter(language_list)
 
         # Extract languages and their counts for plotting
         languages = list(language_counts.keys())
@@ -103,10 +101,9 @@ def graph():
         return render_template('graph.html', image=pngImageB64String)
 
     else:
-        print(
-            f"Failed to retrieve search results. Status code: {response.status_code}")
-        return render_template('error.html')
-
+        error_message = f"Failed to retrieve search results. Status code: {response.status_code}"
+        print(error_message)
+        return render_template('error.html', message=error_message)
 
 if __name__ == '__main__':
     app.run(debug=True)
