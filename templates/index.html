@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Trends Visualization</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-     <style>
+    <style>
         .header-container {
             display: flex;
             align-items: center;
@@ -16,18 +16,38 @@
         form {
             margin-right: 10px; /* Adjust margin*/
         }
+
     </style>
+
+    <script>
+   document.addEventListener('DOMContentLoaded', function () {
+        // Set the selected option based on the query parameter in the URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var urlDuration = urlParams.get('duration');
+        if (urlDuration) {
+            document.getElementById('time_span').value = urlDuration;
+        }
+    });
+
+    function updateFormAction() {
+        var selectedOption = document.getElementById('time_span').value;
+        var form = document.getElementById('time_span_form');
+        form.action = "{{ url_for('index') }}?duration=" + selectedOption;
+        form.submit(); // Manually submit the form
+    }
+
+    </script>
 </head>
 
 <body>
 <div class="header-container">
     <h1>Trending Repositories</h1>
-    <form action="{{ url_for('index') }}" method="post">
+    <form id="time_span_form" action="{{ url_for('index') }}" method="post">
         <label for="time_span">Select time span:</label>
-        <select id="time_span" name="time_span">
-            <option value="today" {% if selected_option=='today' %}selected{% endif %}>Today</option>
-            <option value="this_week" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
-            <option value="this_month" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
+        <select id="time_span" name="time_span" onchange="updateFormAction()">
+            <option value="daily" {% if selected_option=='today' %}selected{% endif %}>Today</option>
+            <option value="weekly" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
+            <option value="monthly" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
         </select>
         <button type="submit">Submit</button>
     </form>
