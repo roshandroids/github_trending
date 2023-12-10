@@ -48,4 +48,5 @@ class GithubScraper:
         self.parse_html()
         repo_elements = self.soup.select('article.Box-row')
         repositories = [RepositoryModel.from_html(repo) for repo in repo_elements]
+        print(repositories)
         return repositories

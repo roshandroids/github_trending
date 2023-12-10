@@ -16,8 +16,52 @@
         form {
             margin-right: 10px; /* Adjust margin*/
         }
+        
+        #main {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
 
+        .card {
+            width: 300px;
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
 
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card h2 {
+            margin-bottom: 10px;
+        }
+
+        .owner,
+        .description,
+        .language,
+        .total-stars,
+        .stars-today {
+            margin: 5px 0;
+        }
+
+        .language span {
+            font-weight: bold;
+        }
+
+        .stars-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #languageFilter {
+            margin-bottom: 20px;
+        }
     </style>
 
     <script>
@@ -43,12 +87,38 @@
         form.submit(); // Manually submit the form
     }
 
+    function filterByLanguage(language) {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            const cardLanguage = card.querySelector('.language span').textContent;
+            card.style.display = cardLanguage.toLowerCase() === language.toLowerCase() ? 'block' : 'none';
+        });
+    }
+
+    function resetFilter() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.style.display = 'block';
+        });
+    }
+
     </script>
 </head>
 
 <body>
 <div class="header-container">
     <h1>Trending Repositories</h1>
+    <div id="languageFilter">
+        <label for="languageSelect">Filter by Language:</label>
+        <select id="languageSelect" onchange="filterByLanguage(this.value)">
+            <option value="">All Languages</option>
+            <!-- Add options for each unique language in your repoList -->
+            {% for repository in repoList %}
+                <option value="{{ repository.language }}">{{ repository.language }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="resetFilter()">Reset</button>
+    </div>
     <form id="time_span_form" method="post">
         <label for="time_span">Select time span:</label>
         <select id="time_span" name="time_span" onchange="updateFormAction()">
@@ -69,16 +139,17 @@
     </form>
 </div>
 
-
 <main id="main">
     {% for repository in repoList %}
-    <div class="repository">
+    <div class="card">
         <h2>{{ repository.name }}</h2>
-        <p>Owner: {{ repository.owner }}</p>
-        <p>Description: {{ repository.description }}</p>
-        <p>Language: <span class="language">{{ repository.language }}</span></p>
-        <p>Total Stars: {{ repository.stars_total }}</p>
-        <p class="stars">{{ repository.stars_today }}</p>
+        <p class="owner">Owner: {{ repository.owner }}</p>
+        <p class="description">Description: {{ repository.description }}</p>
+        <p class="language">Language: <span>{{ repository.language }}</span></p>
+        <div class="stars-section">
+            <p class="total-stars">Total Stars: {{ repository.stars_total }}</p>
+            <p class="stars-today">{{ repository.stars_today }} stars today</p>
+        </div>
     </div>
     {% endfor %}
 </main>
