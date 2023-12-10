@@ -184,14 +184,19 @@ def pieChart():
     con.close()
 
     # Create a Matplotlib figure
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(14, 12))  # Adjust the size as needed
 
     # Extract languages and their counts for plotting
     languages, counts = zip(*data)
+    # Adjust the explode tuple as needed
+    explode = (1, 0, 0, ...)
+    # autopct: the percent
+    plt.pie(counts, labels=languages, autopct='%1.1f%%', startangle=60, textprops={'fontsize': 6})
 
-    # Plotting the bar chart
-    plt.pie(counts, labels=languages, autopct='%1.1f%%', startangle=90)
     plt.title('Language Share')
+    # Place the legend outside the pie chart to avoid overlapping with the chart itself
+    plt.legend(labels=languages, loc="center left", bbox_to_anchor=(1, 0.5))
+
     plt.show()
 
     # Save the plot to a BytesIO object
