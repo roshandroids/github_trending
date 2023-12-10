@@ -10,13 +10,15 @@
         .header-container {
             display: flex;
             align-items: center;
-            gap: 20px; /* Adjust the gap */
+            gap: 20px;
+            /* Adjust the gap */
         }
 
         form {
-            margin-right: 10px; /* Adjust margin*/
+            margin-right: 10px;
+            /* Adjust margin*/
         }
-        
+
         #main {
             display: flex;
             justify-content: space-around;
@@ -65,94 +67,94 @@
     </style>
 
     <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Set the selected option based on the query parameter in the URL
-    var urlParams = new URLSearchParams(window.location.search);
-    var urlDuration = urlParams.get('duration');
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set the selected option based on the query parameter in the URL
+            var urlParams = new URLSearchParams(window.location.search);
+            var urlDuration = urlParams.get('duration');
 
-    console.log('URL Duration:', urlDuration);
+            console.log('URL Duration:', urlDuration);
 
-    // Update the select element only if the URL parameter is valid
-    if (urlDuration && ['daily', 'weekly', 'monthly'].includes(urlDuration)) {
-        console.log('Setting value:', urlDuration);
-        document.getElementById('time_span').value = urlDuration;
-    } else {
-        console.log('Invalid or missing URL duration:', urlDuration);
-    }
-});
-    function updateFormAction() {
-        var selectedOption = document.getElementById('time_span').value;
-        var form = document.getElementById('time_span_form');
-        form.action = "{{ url_for('index') }}?duration=" + selectedOption;
-        form.submit(); // Manually submit the form
-    }
-
-    function filterByLanguage(language) {
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => {
-            const cardLanguage = card.querySelector('.language span').textContent;
-            card.style.display = cardLanguage.toLowerCase() === language.toLowerCase() ? 'block' : 'none';
+            // Update the select element only if the URL parameter is valid
+            if (urlDuration && ['daily', 'weekly', 'monthly'].includes(urlDuration)) {
+                console.log('Setting value:', urlDuration);
+                document.getElementById('time_span').value = urlDuration;
+            } else {
+                console.log('Invalid or missing URL duration:', urlDuration);
+            }
         });
-    }
+        function updateFormAction() {
+            var selectedOption = document.getElementById('time_span').value;
+            var form = document.getElementById('time_span_form');
+            form.action = "{{ url_for('index') }}?duration=" + selectedOption;
+            form.submit(); // Manually submit the form
+        }
 
-    function resetFilter() {
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => {
-            card.style.display = 'block';
-        });
-    }
+        function filterByLanguage(language) {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const cardLanguage = card.querySelector('.language span').textContent;
+                card.style.display = cardLanguage.toLowerCase() === language.toLowerCase() ? 'block' : 'none';
+            });
+        }
+
+        function resetFilter() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.display = 'block';
+            });
+        }
 
     </script>
 </head>
 
 <body>
-<div class="header-container">
-    <h1>Trending Repositories</h1>
-    <div id="languageFilter">
-        <label for="languageSelect">Filter by Language:</label>
-        <select id="languageSelect" onchange="filterByLanguage(this.value)">
-            <option value="">All Languages</option>
-            <!-- Add options for each unique language in your repoList -->
-            {% for repository in repoList %}
+    <div class="header-container">
+        <h1>Trending Repositories</h1>
+        <div id="languageFilter">
+            <label for="languageSelect">Filter by Language:</label>
+            <select id="languageSelect" onchange="filterByLanguage(this.value)">
+                <option value="">All Languages</option>
+                <!-- Add options for each unique language in your repoList -->
+                {% for repository in repoList %}
                 <option value="{{ repository.language }}">{{ repository.language }}</option>
-            {% endfor %}
-        </select>
-        <button onclick="resetFilter()">Reset</button>
-    </div>
-    <form id="time_span_form" method="post">
-        <label for="time_span">Select time span:</label>
-        <select id="time_span" name="time_span" onchange="updateFormAction()">
-            <option value="daily" {% if selected_option=='today' %}selected{% endif %}>Today</option>
-            <option value="weekly" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
-            <option value="monthly" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
-        </select>
-        <button type="submit">Submit</button>
-    </form>
-    <form action="{{ url_for('graph') }}" method="post">
-        <button type="submit" name="show_graph">Show Graph</button>
-    </form>
-    <form action="{{ url_for('pieChart') }}" method="post">
-        <button type="submit" name="show_pieChart">Show Pie Chart</button>
-    </form>
-    <form action="{{ url_for('boxPlot') }}" method="post">
-        <button type="submit" name="show_boxPlot">Show Box Plot</button>
-    </form>
-</div>
-
-<main id="main">
-    {% for repository in repoList %}
-    <div class="card">
-        <h2>{{ repository.name }}</h2>
-        <p class="owner">Owner: {{ repository.owner }}</p>
-        <p class="description">Description: {{ repository.description }}</p>
-        <p class="language">Language: <span>{{ repository.language }}</span></p>
-        <div class="stars-section">
-            <p class="total-stars">Total Stars: {{ repository.stars_total }}</p>
-            <p class="stars-today">{{ repository.stars_today }} stars today</p>
+                {% endfor %}
+            </select>
+            <button onclick="resetFilter()">Reset</button>
         </div>
+        <form id="time_span_form" method="post">
+            <label for="time_span">Select time span:</label>
+            <select id="time_span" name="time_span" onchange="updateFormAction()">
+                <option value="daily" {% if selected_option=='today' %}selected{% endif %}>Today</option>
+                <option value="weekly" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
+                <option value="monthly" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        <form action="{{ url_for('graph') }}" method="post">
+            <button type="submit" name="show_graph">Show Graph</button>
+        </form>
+        <form action="{{ url_for('pieChart') }}" method="post">
+            <button type="submit" name="show_pieChart">Show Pie Chart</button>
+        </form>
+        <form action="{{ url_for('boxPlot') }}" method="post">
+            <button type="submit" name="show_boxPlot">Show Box Plot</button>
+        </form>
     </div>
-    {% endfor %}
-</main>
+
+    <main id="main">
+        {% for repository in repoList %}
+        <div class="card">
+            <h2>{{ repository.name }}</h2>
+            <p class="owner">Owner: {{ repository.owner }}</p>
+            <p class="description">Description: {{ repository.description }}</p>
+            <p class="language">Language: <span>{{ repository.language }}</span></p>
+            <div class="stars-section">
+                <p class="total-stars">Total Stars: {{ repository.stars_total }}</p>
+                <p class="stars-today">{{ repository.stars_today }} stars today</p>
+            </div>
+        </div>
+        {% endfor %}
+    </main>
 </body>
 
 </html>
