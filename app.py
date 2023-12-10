@@ -6,7 +6,7 @@ import sqlite3
 import sys
 import seaborn as sns
 import matplotlib
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pandas as pd
@@ -25,12 +25,12 @@ matplotlib.use('agg')
 app = Flask(__name__)
 
 
-def perform_web_scraping_and_insert():
+def perform_web_scraping_and_insert(duration):
     """
     Perform web scraping using GithubScraper and insert data into the database.
     """
     github_scraper = GithubScraper()
-    response = github_scraper.fetch_data()
+    response = github_scraper.fetch_data(duration)
 
     if response.status_code == 200:
         repositories = github_scraper.extract_repositories()
@@ -50,16 +50,17 @@ def perform_web_scraping_and_insert():
                 description TEXT,
                 language TEXT,
                 stars_total TEXT,
-                stars_today TEXT
+                stars_today TEXT,
+                duration TEXT
             )
         """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
-            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?)
         """, [
             (repo.name, repo.owner, repo.description,
-             repo.language, repo.stars_total, repo.stars_today)
+             repo.language, repo.stars_total, repo.stars_today, duration)
             for repo in repositories
         ])
 
@@ -68,6 +69,7 @@ def perform_web_scraping_and_insert():
 
         # Close the database connection
         con.close()
+    return repositories
 
 @app.route('/getSomethingFromDB')
 def getSomethingFromDB():
@@ -90,18 +92,19 @@ def getSomethingFromDB():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    duration = request.args.get('duration', 'daily')
     # Check if the database file exists
     db_file = "github_trending.db"
     if not os.path.exists(db_file):
         # If the database file doesn't exist, create it and perform web scraping
-        perform_web_scraping_and_insert()
+        perform_web_scraping_and_insert(duration)
 
     # Connect to the database
     con = sqlite3.connect(db_file)
     cur = con.cursor()
 
     # Check if the 'repositories' table exists and has data
-    cur.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
+    cur.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
     table_exists = cur.fetchone()[0] > 0
 
     if not table_exists:
@@ -109,17 +112,22 @@ def index():
         perform_web_scraping_and_insert()
 
     # Fetch data from the database
-    cur.execute("SELECT * FROM repositories")
+    cur.execute(f"SELECT * FROM repositories WHERE duration = ?", (duration,))
     repositories_data = cur.fetchall()
 
     # Close the database connection
     con.close()
-    print(f'Data from local\n{repositories_data}')
+    # Check if repositories_data is empty
+    if not repositories_data:
+        print("No data found in the 'repositories' table for the specified duration.")
+        repositories=perform_web_scraping_and_insert(duration)
+        print(f'Data from local\n{repositories_data}')
+    else:
+        print(f'Data from local\n{repositories_data}')
+        # Convert data to RepositoryModel instances
+        repositories = [RepositoryModel(*repo_data) for repo_data in repositories_data]
 
-    # Convert data to RepositoryModel instances
-    repositories = [RepositoryModel(*repo_data) for repo_data in repositories_data]
-
-    return render_template('index.html', repoList=repositories)
+    return render_template('index.html', selected_option=duration, repoList=repositories)
 
 
 
