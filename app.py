@@ -25,7 +25,7 @@ matplotlib.use('agg')
 app = Flask(__name__)
 
 
-def perform_web_scraping_and_insert(duration):
+def perform_web_scraping_and_insert(duration, exist):
     """
     Perform web scraping using GithubScraper and insert data into the database.
     """
@@ -39,11 +39,12 @@ def perform_web_scraping_and_insert(duration):
         con = sqlite3.connect("github_trending.db")
         cur = con.cursor()
 
-        # Drop the table if it exists (for demonstration purposes)
-        cur.execute("DROP TABLE IF EXISTS repositories")
+        if exist:
+          # Drop the table if it exists (for demonstration purposes)
+          cur.execute("DROP TABLE IF EXISTS repositories")
 
-        # Create the 'repositories' table
-        cur.execute("""
+          # Create the 'repositories' table
+          cur.execute("""
             CREATE TABLE IF NOT EXISTS repositories (
                 name TEXT,
                 owner TEXT,
@@ -52,8 +53,8 @@ def perform_web_scraping_and_insert(duration):
                 stars_total TEXT,
                 stars_today TEXT,
                 duration TEXT
-            )
-        """)
+             )
+            """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
@@ -70,6 +71,7 @@ def perform_web_scraping_and_insert(duration):
         # Close the database connection
         con.close()
     return repositories
+
 
 @app.route('/getSomethingFromDB')
 def getSomethingFromDB():
@@ -90,14 +92,15 @@ def getSomethingFromDB():
         movies.append(movie)
     return render_template('get_data.html', movies=movies)
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    duration = request.args.get('duration', 'daily')
+    duration = request.args.get('duration')
     # Check if the database file exists
     db_file = "github_trending.db"
     if not os.path.exists(db_file):
         # If the database file doesn't exist, create it and perform web scraping
-        perform_web_scraping_and_insert(duration)
+        perform_web_scraping_and_insert(duration, True)
 
     # Connect to the database
     con = sqlite3.connect(db_file)
@@ -109,7 +112,7 @@ def index():
 
     if not table_exists:
         # If the 'repositories' table doesn't exist or has no data, perform web scraping
-        perform_web_scraping_and_insert()
+        perform_web_scraping_and_insert(duration, True)
 
     # Fetch data from the database
     cur.execute(f"SELECT * FROM repositories WHERE duration = ?", (duration,))
@@ -120,7 +123,7 @@ def index():
     # Check if repositories_data is empty
     if not repositories_data:
         print("No data found in the 'repositories' table for the specified duration.")
-        repositories=perform_web_scraping_and_insert(duration)
+        repositories = perform_web_scraping_and_insert(duration, False)
         print(f'Data from local\n{repositories_data}')
     else:
         print(f'Data from local\n{repositories_data}')
@@ -128,7 +131,6 @@ def index():
         repositories = [RepositoryModel(*repo_data) for repo_data in repositories_data]
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
-
 
 
 @app.route('/graph', methods=['GET', 'POST'])
@@ -204,6 +206,7 @@ def pieChart():
     # Pass the BytesIO object to the template
     return render_template('graph.html', image=png_image_64)
 
+
 @app.route('/boxPlot', methods=['GET', 'POST'])
 def boxPlot():
     # Fetch data from the database
@@ -237,6 +240,7 @@ def boxPlot():
 
     # Pass the BytesIO object to the template
     return render_template('graph.html', image=png_image_64)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

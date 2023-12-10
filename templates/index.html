@@ -17,18 +17,25 @@
             margin-right: 10px; /* Adjust margin*/
         }
 
+
     </style>
 
     <script>
-   document.addEventListener('DOMContentLoaded', function () {
-        // Set the selected option based on the query parameter in the URL
-        var urlParams = new URLSearchParams(window.location.search);
-        var urlDuration = urlParams.get('duration');
-        if (urlDuration) {
-            document.getElementById('time_span').value = urlDuration;
-        }
-    });
+  document.addEventListener('DOMContentLoaded', function () {
+    // Set the selected option based on the query parameter in the URL
+    var urlParams = new URLSearchParams(window.location.search);
+    var urlDuration = urlParams.get('duration');
 
+    console.log('URL Duration:', urlDuration);
+
+    // Update the select element only if the URL parameter is valid
+    if (urlDuration && ['daily', 'weekly', 'monthly'].includes(urlDuration)) {
+        console.log('Setting value:', urlDuration);
+        document.getElementById('time_span').value = urlDuration;
+    } else {
+        console.log('Invalid or missing URL duration:', urlDuration);
+    }
+});
     function updateFormAction() {
         var selectedOption = document.getElementById('time_span').value;
         var form = document.getElementById('time_span_form');
@@ -42,7 +49,7 @@
 <body>
 <div class="header-container">
     <h1>Trending Repositories</h1>
-    <form id="time_span_form" action="{{ url_for('index') }}" method="post">
+    <form id="time_span_form" method="post">
         <label for="time_span">Select time span:</label>
         <select id="time_span" name="time_span" onchange="updateFormAction()">
             <option value="daily" {% if selected_option=='today' %}selected{% endif %}>Today</option>
@@ -54,10 +61,10 @@
     <form action="{{ url_for('graph') }}" method="post">
         <button type="submit" name="show_graph">Show Graph</button>
     </form>
-     <form action="{{ url_for('pieChart') }}" method="post">
+    <form action="{{ url_for('pieChart') }}" method="post">
         <button type="submit" name="show_pieChart">Show Pie Chart</button>
     </form>
-     <form action="{{ url_for('boxPlot') }}" method="post">
+    <form action="{{ url_for('boxPlot') }}" method="post">
         <button type="submit" name="show_boxPlot">Show Box Plot</button>
     </form>
 </div>

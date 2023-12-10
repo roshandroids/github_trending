@@ -1,11 +1,12 @@
 class RepositoryModel:
-    def __init__(self, name, owner, description, language, stars_total, stars_today):
+    def __init__(self, name, owner, description, language, stars_total, stars_today, duration):
         self.name = name
         self.owner = owner
         self.description = description
         self.language = language
         self.stars_total = stars_total
         self.stars_today = stars_today
+        self.duration = duration
 
     @classmethod
     def from_html(cls, html):
@@ -27,4 +28,18 @@ class RepositoryModel:
         stars_today_element = html.select_one('.d-inline-block.float-sm-right')
         stars_today = stars_today_element.text.strip() if stars_today_element else '0'
 
-        return cls(name, owner, description, language, stars_total, stars_today)
+        # Assuming 'html' is the BeautifulSoup object containing the HTML structure
+        stars_duration_element = html.select_one('.float-sm-right')
+        stars_duration_text = stars_duration_element.text.strip() if stars_duration_element else 'N/A'
+
+        # Extracting the duration from the text
+        if 'stars today' in stars_duration_text:
+            duration = 'daily'
+        elif 'stars this week' in stars_duration_text:
+            duration = 'weekly'
+        elif 'stars this month' in stars_duration_text:
+            duration = 'monthly'
+        else:
+            duration = 'N/A'
+
+        return cls(name, owner, description, language, stars_total, stars_today, duration)
