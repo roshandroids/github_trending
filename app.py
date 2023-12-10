@@ -24,6 +24,54 @@ app = Flask(__name__)
 matplotlib.use('agg')
 app = Flask(__name__)
 
+# Configure Matplotlib for Agg backend
+matplotlib.use('agg')
+
+
+def perform_web_scraping_and_insert():
+    """
+    Perform web scraping using GithubScraper and insert data into the database.
+    """
+    github_scraper = GithubScraper()
+    response = github_scraper.fetch_data()
+
+    if response.status_code == 200:
+        repositories = github_scraper.extract_repositories()
+
+        # Connect to the database
+        con = sqlite3.connect("github_trending.db")
+        cur = con.cursor()
+
+        # Drop the table if it exists (for demonstration purposes)
+        cur.execute("DROP TABLE IF EXISTS repositories")
+
+        # Create the 'repositories' table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS repositories (
+                name TEXT,
+                owner TEXT,
+                description TEXT,
+                language TEXT,
+                stars_total TEXT,
+                stars_today TEXT
+            )
+        """)
+
+        # Insert data into the 'repositories' table
+        cur.executemany("""
+            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?)
+        """, [
+            (repo.name, repo.owner, repo.description,
+             repo.language, repo.stars_total, repo.stars_today)
+            for repo in repositories
+        ])
+
+        # Commit the changes to the database
+        con.commit()
+
+        # Close the database connection
+        con.close()
+
 
 def perform_web_scraping_and_insert(duration, exist):
     """
@@ -40,11 +88,11 @@ def perform_web_scraping_and_insert(duration, exist):
         cur = con.cursor()
 
         if exist:
-          # Drop the table if it exists (for demonstration purposes)
-          cur.execute("DROP TABLE IF EXISTS repositories")
+            # Drop the table if it exists (for demonstration purposes)
+            cur.execute("DROP TABLE IF EXISTS repositories")
 
-          # Create the 'repositories' table
-          cur.execute("""
+            # Create the 'repositories' table
+            cur.execute("""
             CREATE TABLE IF NOT EXISTS repositories (
                 name TEXT,
                 owner TEXT,
@@ -77,20 +125,29 @@ def perform_web_scraping_and_insert(duration, exist):
 def getSomethingFromDB():
     con = sqlite3.connect("tutorial.db")
     cur = con.cursor()
-    cur.execute("DROP TABLE movie")
-    cur.execute("CREATE TABLE movie(title, year, score)")
-    cur.execute("""
-        INSERT INTO movie VALUES
-            ('Monty Python and the Holy Grail', 1975, 8.2),
-            ('And Now for Something Completely Different', 1971, 7.5)
-    """)
-    con.commit()
-    cursor = con.execute('''select * from movie where year''')
-    movies = []
-    for row in cursor:
-        movie = {'title': row[0], 'year': row[1], 'score': row[2]}
-        movies.append(movie)
-    return render_template('get_data.html', movies=movies)
+
+    # Check if the 'repositories' table exists and has data
+    cur.execute(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
+    table_exists = cur.fetchone()[0] > 0
+
+    if not table_exists:
+        # If the 'repositories' table doesn't exist or has no data, perform web scraping
+        perform_web_scraping_and_insert()
+
+    # Fetch data from the database
+    cur.execute("SELECT * FROM repositories")
+    repositories_data = cur.fetchall()
+
+    # Close the database connection
+    con.close()
+    print(f'Data from local\n{repositories_data}')
+
+    # Convert data to RepositoryModel instances
+    repositories = [RepositoryModel(*repo_data)
+                    for repo_data in repositories_data]
+
+    return render_template('index.html', repoList=repositories)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -107,7 +164,8 @@ def index():
     cur = con.cursor()
 
     # Check if the 'repositories' table exists and has data
-    cur.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
+    cur.execute(
+        f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
     table_exists = cur.fetchone()[0] > 0
 
     if not table_exists:
@@ -128,7 +186,8 @@ def index():
     else:
         print(f'Data from local\n{repositories_data}')
         # Convert data to RepositoryModel instances
-        repositories = [RepositoryModel(*repo_data) for repo_data in repositories_data]
+        repositories = [RepositoryModel(*repo_data)
+                        for repo_data in repositories_data]
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
@@ -191,7 +250,8 @@ def pieChart():
     # Adjust the explode tuple as needed
     explode = (1, 0, 0, ...)
     # autopct: the percent
-    plt.pie(counts, labels=languages, autopct='%1.1f%%', startangle=60, textprops={'fontsize': 6})
+    plt.pie(counts, labels=languages, autopct='%1.1f%%',
+            startangle=60, textprops={'fontsize': 6})
 
     plt.title('Language Share')
     # Place the legend outside the pie chart to avoid overlapping with the chart itself
