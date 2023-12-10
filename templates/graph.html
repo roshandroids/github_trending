@@ -9,7 +9,10 @@
 <body>
 
    <h1>GitHub Trends Visualization</h1>
-
+    <form action="{{ url_for('index') }}" method="post">
+        <button type="submit" name="show_boxPlot">Back to Index</button>
+    </form>
    <img src="{{ image }}"/>
+
 </body>
 </html>
