@@ -1,5 +1,5 @@
 class RepositoryModel:
-    def __init__(self, name, owner, description, language, stars_total, stars_today, duration):
+    def __init__(self, name, owner, description, language, stars_total, stars_today, duration, repository_url):
         self.name = name
         self.owner = owner
         self.description = description
@@ -7,11 +7,15 @@ class RepositoryModel:
         self.stars_total = stars_total
         self.stars_today = stars_today
         self.duration = duration
+        self.repository_url = repository_url;
 
     @classmethod
     def from_html(cls, html):
         name_element = html.select_one('.h3 a')
         name = name_element.text.strip() if name_element else 'N/A'
+
+        repository_url = name_element['href'].strip() if name_element and 'href' in name_element.attrs else 'N/A'
+        repository_url = "https://github.com" + repository_url;
 
         owner_element = html.select_one('.text-normal')
         owner = owner_element.text.strip() if owner_element else 'N/A'
@@ -42,4 +46,4 @@ class RepositoryModel:
         else:
             duration = 'N/A'
 
-        return cls(name, owner, description, language, stars_total, stars_today, duration)
+        return cls(name, owner, description, language, stars_total, stars_today, duration, repository_url)

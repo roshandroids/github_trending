@@ -52,16 +52,17 @@ def perform_web_scraping_and_insert(duration, exist):
                 language TEXT,
                 stars_total TEXT,
                 stars_today TEXT,
-                duration TEXT
+                duration TEXT,
+                repository_url TEXT
              )
             """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
-            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?)
+            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?,?)
         """, [
             (repo.name, repo.owner, repo.description,
-             repo.language, repo.stars_total, repo.stars_today, duration)
+             repo.language, repo.stars_total, repo.stars_today, duration,repo.repository_url)
             for repo in repositories
         ])
 
@@ -95,7 +96,7 @@ def getSomethingFromDB():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    duration = request.args.get('duration')
+    duration = request.args.get('duration',"daily")
     # Check if the database file exists
     db_file = "github_trending.db"
     if not os.path.exists(db_file):
