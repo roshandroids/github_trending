@@ -21,6 +21,8 @@ sys.path.append(project_root)
 app = Flask(__name__)
 
 # Configure Matplotlib for Agg backend
+#  The 'Agg' backend, short for Anti-Grain Geometry, is a high-quality rendering engine for C++ that Matplotlib
+#  uses for rendering to various file formats, such as PNG
 matplotlib.use('agg')
 app = Flask(__name__)
 
@@ -183,41 +185,6 @@ def pieChart():
 
     plt.show()
 
-    # Save the plot to a BytesIO object
-    png_image = io.BytesIO()
-    canvas = FigureCanvas(fig)
-    canvas.print_png(png_image)
-
-    # Encode PNG image to base64 string
-    png_image_64 = "data:image/png;base64,"
-    png_image_64 += base64.b64encode(png_image.getvalue()).decode('utf8')
-
-    # Pass the BytesIO object to the template
-    return render_template('graph.html', image=png_image_64)
-
-
-@app.route('/boxPlot', methods=['GET', 'POST'])
-def boxPlot():
-    # Fetch data from the database
-    con = sqlite3.connect("github_trending.db")
-    cur = con.cursor()
-    cur.execute("SELECT language, COUNT(*) FROM repositories GROUP BY language")
-    data = cur.fetchall()
-    con.close()
-
-    # Convert the data to a DataFrame
-    df = pd.DataFrame(data, columns=['language', 'count'])
-
-    # Create a Matplotlib figure
-    fig = plt.figure(figsize=(10, 6))
-
-    # Use the DataFrame for plotting
-    sns.boxplot(x='language', y='count', data=df)
-    plt.xlabel('Programming Language')
-    plt.ylabel('Stars')
-    plt.title('Stars Distribution by Language')
-    # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45, ha='right')
     # Save the plot to a BytesIO object
     png_image = io.BytesIO()
     canvas = FigureCanvas(fig)
