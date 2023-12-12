@@ -1,15 +1,38 @@
-<!-- web/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Trending</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0366d6;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
+
 <body>
 
-   <h1>GitHub Trends Visualization</h1>
-   <img src="{{ image }}"/>
+    <h1>GitHub Trends Visualization</h1>
+    <img src="{{ image }}" alt="GitHub Trends Visualization"/>
 
 </body>
+
 </html>

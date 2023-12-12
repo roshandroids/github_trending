@@ -76,7 +76,9 @@
             {% for repository in repoList %}
             <div class="repository-card">
                 <span class="card-number">{{ loop.index }}</span>
-                <h2>{{ repository.name }}</h2>
+                <a href="{{ repository.repository_url }}">
+                    <h2>{{ repository.name }}</h2>
+                </a>
                 <p class="owner">Owner: {{ repository.owner }}</p>
                 <p class="description">Description: {{ repository.description }}</p>
                 <p class="language">Language: <span>{{ repository.language }}</span></p>
