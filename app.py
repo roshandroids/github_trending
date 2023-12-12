@@ -4,14 +4,13 @@ import io
 import os
 import sqlite3
 import sys
-import seaborn as sns
 import matplotlib
 from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import pandas as pd
 from models.repository_model import RepositoryModel
 from scraper.github_scraper import GithubScraper
+from datetime import datetime, timedelta
 
 # Add the project root to the system path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ''))
@@ -55,16 +54,17 @@ def perform_web_scraping_and_insert(duration, exist):
                 stars_total TEXT,
                 stars_today TEXT,
                 duration TEXT,
-                repository_url TEXT
+                repository_url TEXT,
+                last_updated DATETIME
              )
             """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
-            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?,?)
+            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             (repo.name, repo.owner, repo.description,
-             repo.language, repo.stars_total, repo.stars_today, duration, repo.repository_url)
+             repo.language, repo.stars_total, repo.stars_today, duration, repo.repository_url, repo.last_updated)
             for repo in repositories
         ])
 
@@ -110,10 +110,20 @@ def index():
         repositories = perform_web_scraping_and_insert(duration, False)
         print(f'Data from local\n{repositories_data}')
     else:
+
         print(f'Data from local\n{repositories_data}')
         # Convert data to RepositoryModel instances
         repositories = [RepositoryModel(*repo_data)
                         for repo_data in repositories_data]
+        date_objects = [datetime.strptime(repo.last_updated, '%Y-%m-%d %H:%M:%S.%f') for repo in repositories]
+        # Calculate the sum of datetime objects using timedelta
+
+        # Get the current datetime
+        current_datetime = datetime.now()
+        difference = current_datetime - date_objects[0]
+
+        if difference == timedelta(days=1):
+            repositories = perform_web_scraping_and_insert(duration, False)
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
@@ -130,7 +140,8 @@ def graph():
     # Create a Matplotlib figure
     fig = plt.figure(figsize=(10, 6))
 
-    # Add a subplot to the figure
+    # Add a subplot to the figure--it's specifying a grid with 1 row and 1 column,
+    # and it's adding a subplot at the first position (index 1) in this grid
     axis = fig.add_subplot(1, 1, 1)
 
     # Extract languages and their counts for plotting
@@ -151,7 +162,7 @@ def graph():
     canvas = FigureCanvas(fig)
     canvas.print_png(png_image)
 
-    # Encode PNG image to base64 string
+    # Encode PNG image to base64 string--the Matplotlib-generated PNG image is encoded to a base64 string before passing it to the template.
     png_image_64 = "data:image/png;base64,"
     png_image_64 += base64.b64encode(png_image.getvalue()).decode('utf8')
 
@@ -173,8 +184,7 @@ def pieChart():
 
     # Extract languages and their counts for plotting
     languages, counts = zip(*data)
-    # Adjust the explode tuple as needed
-    explode = (1, 0, 0, ...)
+
     # autopct: the percent
     plt.pie(counts, labels=languages, autopct='%1.1f%%',
             startangle=60, textprops={'fontsize': 6})
