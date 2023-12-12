@@ -4,12 +4,10 @@ import io
 import os
 import sqlite3
 import sys
-import seaborn as sns
 import matplotlib
 from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import pandas as pd
 from models.repository_model import RepositoryModel
 from scraper.github_scraper import GithubScraper
 
@@ -130,7 +128,8 @@ def graph():
     # Create a Matplotlib figure
     fig = plt.figure(figsize=(10, 6))
 
-    # Add a subplot to the figure
+    # Add a subplot to the figure--it's specifying a grid with 1 row and 1 column,
+    # and it's adding a subplot at the first position (index 1) in this grid
     axis = fig.add_subplot(1, 1, 1)
 
     # Extract languages and their counts for plotting
@@ -151,7 +150,7 @@ def graph():
     canvas = FigureCanvas(fig)
     canvas.print_png(png_image)
 
-    # Encode PNG image to base64 string
+    # Encode PNG image to base64 string--the Matplotlib-generated PNG image is encoded to a base64 string before passing it to the template.
     png_image_64 = "data:image/png;base64,"
     png_image_64 += base64.b64encode(png_image.getvalue()).decode('utf8')
 
@@ -173,8 +172,7 @@ def pieChart():
 
     # Extract languages and their counts for plotting
     languages, counts = zip(*data)
-    # Adjust the explode tuple as needed
-    explode = (1, 0, 0, ...)
+
     # autopct: the percent
     plt.pie(counts, labels=languages, autopct='%1.1f%%',
             startangle=60, textprops={'fontsize': 6})
