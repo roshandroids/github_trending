@@ -40,10 +40,6 @@ document.addEventListener('DOMContentLoaded', function () {
         openGraphModal('/pieChart');
     });
 
-    document.getElementById('showBoxPlot').addEventListener('click', function () {
-        openGraphModal('/boxPlot');
-    });
-
     document.getElementById('closeModal').addEventListener('click', function () {
         closeGraphModal();
     });
