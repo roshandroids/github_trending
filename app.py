@@ -21,6 +21,8 @@ sys.path.append(project_root)
 app = Flask(__name__)
 
 # Configure Matplotlib for Agg backend
+#  The 'Agg' backend, short for Anti-Grain Geometry, is a high-quality rendering engine for C++ that Matplotlib
+#  uses for rendering to various file formats, such as PNG
 matplotlib.use('agg')
 app = Flask(__name__)
 
@@ -196,6 +198,10 @@ def pieChart():
     return render_template('graph.html', image=png_image_64)
 
 
+# Box: The box represents the interquartile range (IQR) of the dataset,
+# which is the range between the first quartile (Q1) and the third quartile (Q3).
+# The height of the box indicates the spread of the middle 50% of the data.
+# visualize the distribution of stars  across different programming languages in  GitHub repositories.
 @app.route('/boxPlot', methods=['GET', 'POST'])
 def boxPlot():
     # Fetch data from the database
