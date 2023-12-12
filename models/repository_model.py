@@ -1,5 +1,9 @@
+from datetime import datetime
+
+
 class RepositoryModel:
-    def __init__(self, name, owner, description, language, stars_total, stars_today, duration, repository_url):
+    def __init__(self, name, owner, description, language, stars_total, stars_today, duration, repository_url,
+                 last_updated):
         self.name = name
         self.owner = owner
         self.description = description
@@ -7,7 +11,8 @@ class RepositoryModel:
         self.stars_total = stars_total
         self.stars_today = stars_today
         self.duration = duration
-        self.repository_url = repository_url;
+        self.repository_url = repository_url
+        self.last_updated = last_updated
 
     @classmethod
     def from_html(cls, html):
@@ -46,4 +51,5 @@ class RepositoryModel:
         else:
             duration = 'N/A'
 
-        return cls(name, owner, description, language, stars_total, stars_today, duration, repository_url)
+        return cls(name, owner, description, language, stars_total, stars_today, duration, repository_url,
+                   datetime.now())

@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from models.repository_model import RepositoryModel
 from scraper.github_scraper import GithubScraper
+from datetime import datetime, timedelta
 
 # Add the project root to the system path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ''))
@@ -53,16 +54,17 @@ def perform_web_scraping_and_insert(duration, exist):
                 stars_total TEXT,
                 stars_today TEXT,
                 duration TEXT,
-                repository_url TEXT
+                repository_url TEXT,
+                last_updated DATETIME
              )
             """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
-            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?,?)
+            INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             (repo.name, repo.owner, repo.description,
-             repo.language, repo.stars_total, repo.stars_today, duration, repo.repository_url)
+             repo.language, repo.stars_total, repo.stars_today, duration, repo.repository_url, repo.last_updated)
             for repo in repositories
         ])
 
@@ -108,10 +110,20 @@ def index():
         repositories = perform_web_scraping_and_insert(duration, False)
         print(f'Data from local\n{repositories_data}')
     else:
+
         print(f'Data from local\n{repositories_data}')
         # Convert data to RepositoryModel instances
         repositories = [RepositoryModel(*repo_data)
                         for repo_data in repositories_data]
+        date_objects = [datetime.strptime(repo.last_updated, '%Y-%m-%d %H:%M:%S.%f') for repo in repositories]
+        # Calculate the sum of datetime objects using timedelta
+
+        # Get the current datetime
+        current_datetime = datetime.now()
+        difference = current_datetime - date_objects[0]
+
+        if difference == timedelta(days=1):
+            repositories = perform_web_scraping_and_insert(duration, False)
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
