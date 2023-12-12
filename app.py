@@ -38,6 +38,7 @@ def perform_web_scraping_and_insert(duration):
 
         # Connect to the database
         con = sqlite3.connect("github_trending.db")
+        # a cursor is an object that allows you to interact with the result set of a query.
         cur = con.cursor()
 
         # Drop the table if it exists (for demonstration purposes)
