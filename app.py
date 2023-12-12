@@ -40,11 +40,11 @@ def perform_web_scraping_and_insert(duration, exist):
         cur = con.cursor()
 
         if exist:
-          # Drop the table if it exists (for demonstration purposes)
-          cur.execute("DROP TABLE IF EXISTS repositories")
+            # Drop the table if it exists (for demonstration purposes)
+            cur.execute("DROP TABLE IF EXISTS repositories")
 
-          # Create the 'repositories' table
-          cur.execute("""
+            # Create the 'repositories' table
+            cur.execute("""
             CREATE TABLE IF NOT EXISTS repositories (
                 name TEXT,
                 owner TEXT,
@@ -62,7 +62,7 @@ def perform_web_scraping_and_insert(duration, exist):
             INSERT INTO repositories VALUES (?, ?, ?, ?, ?, ?,?,?)
         """, [
             (repo.name, repo.owner, repo.description,
-             repo.language, repo.stars_total, repo.stars_today, duration,repo.repository_url)
+             repo.language, repo.stars_total, repo.stars_today, duration, repo.repository_url)
             for repo in repositories
         ])
 
@@ -74,29 +74,9 @@ def perform_web_scraping_and_insert(duration, exist):
     return repositories
 
 
-@app.route('/getSomethingFromDB')
-def getSomethingFromDB():
-    con = sqlite3.connect("tutorial.db")
-    cur = con.cursor()
-    cur.execute("DROP TABLE movie")
-    cur.execute("CREATE TABLE movie(title, year, score)")
-    cur.execute("""
-        INSERT INTO movie VALUES
-            ('Monty Python and the Holy Grail', 1975, 8.2),
-            ('And Now for Something Completely Different', 1971, 7.5)
-    """)
-    con.commit()
-    cursor = con.execute('''select * from movie where year''')
-    movies = []
-    for row in cursor:
-        movie = {'title': row[0], 'year': row[1], 'score': row[2]}
-        movies.append(movie)
-    return render_template('get_data.html', movies=movies)
-
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    duration = request.args.get('duration',"daily")
+    duration = request.args.get('duration', "daily")
     # Check if the database file exists
     db_file = "github_trending.db"
     if not os.path.exists(db_file):
@@ -108,7 +88,8 @@ def index():
     cur = con.cursor()
 
     # Check if the 'repositories' table exists and has data
-    cur.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
+    cur.execute(
+        f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'")
     table_exists = cur.fetchone()[0] > 0
 
     if not table_exists:
@@ -129,7 +110,8 @@ def index():
     else:
         print(f'Data from local\n{repositories_data}')
         # Convert data to RepositoryModel instances
-        repositories = [RepositoryModel(*repo_data) for repo_data in repositories_data]
+        repositories = [RepositoryModel(*repo_data)
+                        for repo_data in repositories_data]
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
@@ -192,7 +174,8 @@ def pieChart():
     # Adjust the explode tuple as needed
     explode = (1, 0, 0, ...)
     # autopct: the percent
-    plt.pie(counts, labels=languages, autopct='%1.1f%%', startangle=60, textprops={'fontsize': 6})
+    plt.pie(counts, labels=languages, autopct='%1.1f%%',
+            startangle=60, textprops={'fontsize': 6})
 
     plt.title('Language Share')
     # Place the legend outside the pie chart to avoid overlapping with the chart itself
