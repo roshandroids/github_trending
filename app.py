@@ -26,7 +26,7 @@ matplotlib.use('agg')
 app = Flask(__name__)
 
 
-def perform_web_scraping_and_insert(duration, exist):
+def perform_web_scraping_and_insert(duration):
     """
     Perform web scraping using GithubScraper and insert data into the database.
     """
@@ -40,24 +40,23 @@ def perform_web_scraping_and_insert(duration, exist):
         con = sqlite3.connect("github_trending.db")
         cur = con.cursor()
 
-        if exist:
-            # Drop the table if it exists (for demonstration purposes)
-            cur.execute("DROP TABLE IF EXISTS repositories")
+        # Drop the table if it exists (for demonstration purposes)
+        cur.execute("DROP TABLE IF EXISTS repositories")
 
-            # Create the 'repositories' table
-            cur.execute("""
-            CREATE TABLE IF NOT EXISTS repositories (
-                name TEXT,
-                owner TEXT,
-                description TEXT,
-                language TEXT,
-                stars_total TEXT,
-                stars_today TEXT,
-                duration TEXT,
-                repository_url TEXT,
-                last_updated DATETIME
-             )
-            """)
+        # Create the 'repositories' table
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS repositories (
+            name TEXT,
+            owner TEXT,
+            description TEXT,
+            language TEXT,
+            stars_total TEXT,
+            stars_today TEXT,
+            duration TEXT,
+            repository_url TEXT,
+            last_updated DATETIME
+            )
+        """)
 
         # Insert data into the 'repositories' table
         cur.executemany("""
@@ -83,7 +82,7 @@ def index():
     db_file = "github_trending.db"
     if not os.path.exists(db_file):
         # If the database file doesn't exist, create it and perform web scraping
-        perform_web_scraping_and_insert(duration, True)
+        perform_web_scraping_and_insert(duration)
 
     # Connect to the database
     con = sqlite3.connect(db_file)
@@ -96,7 +95,7 @@ def index():
 
     if not table_exists:
         # If the 'repositories' table doesn't exist or has no data, perform web scraping
-        perform_web_scraping_and_insert(duration, True)
+        perform_web_scraping_and_insert(duration)
 
     # Fetch data from the database
     cur.execute(f"SELECT * FROM repositories WHERE duration = ?", (duration,))
@@ -107,7 +106,7 @@ def index():
     # Check if repositories_data is empty
     if not repositories_data:
         print("No data found in the 'repositories' table for the specified duration.")
-        repositories = perform_web_scraping_and_insert(duration, False)
+        repositories = perform_web_scraping_and_insert(duration)
         print(f'Data from local\n{repositories_data}')
     else:
 
@@ -124,7 +123,7 @@ def index():
         difference = current_datetime - date_objects[0]
 
         if difference == timedelta(days=1):
-            repositories = perform_web_scraping_and_insert(duration, True)
+            repositories = perform_web_scraping_and_insert(duration)
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
