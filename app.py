@@ -115,7 +115,8 @@ def index():
         # Convert data to RepositoryModel instances
         repositories = [RepositoryModel(*repo_data)
                         for repo_data in repositories_data]
-        date_objects = [datetime.strptime(repo.last_updated, '%Y-%m-%d %H:%M:%S.%f') for repo in repositories]
+        date_objects = [datetime.strptime(
+            repo.last_updated, '%Y-%m-%d %H:%M:%S.%f') for repo in repositories]
         # Calculate the sum of datetime objects using timedelta
 
         # Get the current datetime
@@ -123,7 +124,7 @@ def index():
         difference = current_datetime - date_objects[0]
 
         if difference == timedelta(days=1):
-            repositories = perform_web_scraping_and_insert(duration, False)
+            repositories = perform_web_scraping_and_insert(duration, True)
 
     return render_template('index.html', selected_option=duration, repoList=repositories)
 
