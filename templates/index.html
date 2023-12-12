@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Trends Visualization</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='charts.js') }}" defer></script>
+    <script src="static/script.js" defer></script>
+</head>
+
+<body>
+    <div class="header-container">
+        <h1>Trending Repositories</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <!-- Filter by time -->
+            <form id="time_span_form" method="post">
+                <label for="time_span">Select time span:</label>
+                <select id="time_span" name="time_span" onchange="updateFormAction()">
+                    <option value="daily" {% if selected_option=='today' %}selected{% endif %}>Today</option>
+                    <option value="weekly" {% if selected_option=='this_week' %}selected{% endif %}>This Week</option>
+                    <option value="monthly" {% if selected_option=='this_month' %}selected{% endif %}>This Month</option>
+                </select>
+                <button type="submit">Submit</button>
+            </form>
+
+            <!-- Filter by language -->
+            <div id="languageFilter">
+                <label for="languageSelect">Filter by Language:</label>
+                <select id="languageSelect" onchange="filterByLanguage(this.value)">
+                    <option value="">All Languages</option>
+                    {% set uniqueLanguages = [] %}
+                    {% for repository in repoList %}
+                        {% if repository.language not in uniqueLanguages %}
+                            {% set _ = uniqueLanguages.append(repository.language) %}
+                            <option value="{{ repository.language }}">{{ repository.language }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <button onclick="resetFilter()">Reset</button>
+            </div>
+
+            <!-- Display analytics -->
+            <label>Analytics:</label>
+            <!-- Buttons to trigger the modals -->
+            <button id="showBarChart">Show Bar Chart</button>
+            <button id="showPieChart">Show Pie Chart</button>
+            <button id="showBoxPlot">Show Box Plot</button>
+
+            <!-- The Modal -->
+            <div id="graphModal" class="modal">
+                <div class="modal-content">
+                    <!-- Content of the modal, where the graph will be displayed -->
+                    <span class="close" id="closeModal">&times;</span>
+                    <div id="graphContainer"></div>
+                </div>
+            </div>
+
+            <!-- Filter by repo count -->
+            <div id="repoFilter">
+                <label for="repoSelect">Select Repositories:</label>
+                <select id="repoSelect" onchange="filterByRepoCount(this.value)">
+                    <option value="all">All Repositories</option>
+                    <option value="10">First 10 Repositories</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="repository-list">
+            <!-- Repository cards -->
+            {% for repository in repoList %}
+            <div class="repository-card">
+                <span class="card-number">{{ loop.index }}</span>
+                <h2>{{ repository.name }}</h2>
+                <p class="owner">Owner: {{ repository.owner }}</p>
+                <p class="description">Description: {{ repository.description }}</p>
+                <p class="language">Language: <span>{{ repository.language }}</span></p>
+                <div class="stars-section">
+                    <p class="total-stars">Total Stars: {{ repository.stars_total }}</p>
+                    <p class="stars-today">{{ repository.stars_today }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>
